@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UrgentCampaignBanner.css';
+import SERVER_URL from '../hooks/SeverUrl';
 
 const UrgentCampaignBanner = ({ campaigns }) => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const UrgentCampaignBanner = ({ campaigns }) => {
 
   const handleBannerClick = () => {
     if (!isDragging && Math.abs(dragDistance) < 5) {
-      navigate(`/donate/campaign/${campaigns[currentIndex].c_id}`);
+      navigate(`/donate/campaign/${campaigns[currentIndex].id}`);
     }
   };
 
@@ -96,16 +97,16 @@ const UrgentCampaignBanner = ({ campaigns }) => {
     >
       {campaigns.map((campaign, index) => (
         <div
-          key={campaign.c_id}
+          key={campaign.id}
           className={`campaign-slide ${index === currentIndex ? 'active' : ''}`}
           style={{
-            backgroundImage: `url(${campaign.c_image_url})`,
+            backgroundImage: `url(${SERVER_URL}/images/${campaign.imageUrl})`,
           }}
         >
           <div className="campaign-overlay">
             <div className="campaign-content">
               <span className="urgent-badge">긴급 모금</span>
-              <h3 className="campaign-banner-title">{campaign.c_name}</h3>
+              <h3 className="campaign-banner-title">{campaign.name}</h3>
             </div>
           </div>
         </div>
