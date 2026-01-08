@@ -118,10 +118,10 @@ export default function Orgsignup() {
       });
 
       const data = await res.json();
-      console.log(data);
+      // console.log(data);
 
       if (!res.ok) throw new Error(data.message || '서버 응답 오류');
-      console.log('서버 응답:', data);
+      // console.log('서버 응답:', data);
       setEmailVerificationMsg('인증 메일이 발송되었습니다. 이메일을 확인한 후 토큰을 입력해주세요.');
     } catch (err) {
       console.error('이메일 인증 요청 중 오류:', err);
@@ -197,7 +197,7 @@ export default function Orgsignup() {
       });
 
       const data = await res.json();
-      console.log("data", data);
+      // console.log("data", data);
       if (res.status === 201) {
         setMessage(data.message);
         setErrors({});
@@ -218,8 +218,8 @@ export default function Orgsignup() {
 
   return (
     <form className="student-signup" onSubmit={handleSubmit}>
-      <label>기관명*</label>
-      <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="기관명을 입력해주세요" />
+      <label>이름/기관명*</label>
+      <input type="text" name="name" value={formData.name} onChange={handleChange} placeholder="이름 또는 기관명을 입력해주세요" />
       {errors.name && <p className="error">{errors.name}</p>}
 
       <label>사업자 등록번호 (선택)</label>

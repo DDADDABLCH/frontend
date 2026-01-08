@@ -77,7 +77,7 @@ export default function Donatecard({ goal, remaining, participants, onDonate, ca
   };
 
   const handleWithdrawClick = () => {
-    console.log(campaignId);
+    //console.log(campaignId);
     navigate('/organization/beneficiary-withdraw', { 
       state: { campaignId } 
     });
@@ -89,13 +89,13 @@ export default function Donatecard({ goal, remaining, participants, onDonate, ca
 
       <div className="donation-row">
         <span>모금 목표</span>
-        <span>{goal.toLocaleString()}ETH</span>
+        <span>{(goal).toLocaleString()}SCN</span>
       </div>
       <hr className="donation-divider" />
 
       <div className="donation-row">
         <span>모금 완료까지</span>
-        <span>{remaining.toLocaleString()}ETH</span>
+        <span>{remaining <= 0 ? '목표 달성' : `${remaining.toLocaleString()}SCN`}</span>
       </div>
       <hr className="donation-divider" />
 

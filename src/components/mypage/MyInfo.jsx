@@ -41,7 +41,7 @@ export default function MyInfo({ userInfo, setActiveTab }) {
                 }
 
                 const data = await response.json();
-                console.log("NFT 데이터", data);
+                //console.log("NFT 데이터", data);
                 if (data.isSuccess) {
                     setNfts(data.result);
                 }
@@ -58,7 +58,7 @@ export default function MyInfo({ userInfo, setActiveTab }) {
         }
     }, [userInfo]);
 
-    console.log('userInfo:', userInfo);
+    //console.log('userInfo:', userInfo);
  
     const handleDonationsClick = () => {
         setActiveTab('donations');
@@ -83,7 +83,7 @@ export default function MyInfo({ userInfo, setActiveTab }) {
                 <div className="myinfo-donates-content">
                     <div className="myinfo-donates-content-total">
                         <span className="myinfo-donates-content-total-title">총 기부금</span>
-                        <span className="myinfo-donates-content-total-amount">{userInfo.result.totalDonationAmount}ETH</span>
+                        <span className="myinfo-donates-content-total-amount">{userInfo.result.totalDonationAmount.toLocaleString()}SCN</span>
                     </div>
                     <div className="myinfo-donates-content-count">
                         <span className="myinfo-donates-content-count-title">기부 횟수</span>

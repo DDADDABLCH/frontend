@@ -1,58 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DonationCompleteModal.css';
-
 import { IoClose } from "react-icons/io5";
 import { createDonationImage } from '../hooks/imageUtils';
 import SERVER_URL from '../hooks/SeverUrl';
 
-function DonationCompleteModal({ isOpen, onClose, donationInfo }) {
+function DonationCompleteModal({ isOpen, onClose, donationInfo, id }) {
   const navigate = useNavigate();
   const [compositeImage, setCompositeImage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [nickname, setNickname] = useState('');
+  const [nicknameLoaded, setNicknameLoaded] = useState(false);
+
+  const fetchUserInfo = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${SERVER_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.nickname) {
+        setNickname(data.nickname);
+      }
+    } catch (error) {
+      console.error('사용자 정보 조회 실패:', error);
+    } finally {
+      // 닉네임이 없더라도 로딩 완료 상태로 표시
+      setNicknameLoaded(true);
+    }
+  };
 
   const getDefaultImageByCategory = (category) => {
     switch (category) {
       case '아동청소년':
-        return '/image/IMG_children.png';
+        return '/image/IMG_children.PNG';
       case '노인':
-        return '/image/IMG_elderly.png';
+        return '/image/IMG_elderly.PNG';
       case '환경':
-        return '/image/IMG_environment.png';
+        return '/image/IMG_environment.PNG';
       case '사회':
-        return '/image/IMG_social.png';
+        return '/image/IMG_social.PNG';
       case '동물':
-        return '/image/IMG_animal.png';
+        return '/image/IMG_animal.PNG';
       case '장애인':
-        return '/image/IMG_disabled.png';
+        return '/image/IMG_disabled.PNG';
       default:
-        return '/image/IMG_animal.png';   
+        return '/image/IMG_animal.PNG';   
     }
   };
 
   useEffect(() => {
-    if (isOpen && donationInfo) {
-      setIsLoading(true);
-      const defaultImage = getDefaultImageByCategory(donationInfo.category);
-      createDonationImage(defaultImage, donationInfo)
-        .then(async imageUrl => {
-          setCompositeImage(imageUrl);
-          setIsLoading(false);
-          // 이미지가 생성되면 자동으로 업로드
-          try {
-            await uploadNFTImage(imageUrl);
-          } catch (error) {
-            console.error('자동 업로드 실패:', error);
-          }
-        })
-        .catch(error => {
-          console.error('이미지 합성 실패:', error);
-          setCompositeImage(defaultImage);
-          setIsLoading(false);
-        });
-    }
-  }, [isOpen, donationInfo]);
+    fetchUserInfo();
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || !donationInfo || !nicknameLoaded) return;
+
+    setIsLoading(true);
+    const defaultImage = getDefaultImageByCategory(donationInfo.category);
+    createDonationImage(defaultImage, donationInfo, nickname)
+      .then(async imageUrl => {
+        setCompositeImage(imageUrl);
+        setIsLoading(false);
+        // 이미지가 생성되면 자동으로 업로드
+        try {
+          await uploadNFTImage(imageUrl);
+        } catch (error) {
+          console.error('자동 업로드 실패:', error);
+        }
+      })
+      .catch(error => {
+        console.error('이미지 합성 실패:', error);
+        setCompositeImage(defaultImage);
+        setIsLoading(false);
+      });
+  }, [isOpen, donationInfo, nicknameLoaded]);
 
   const uploadNFTImage = async (imageUrl) => {
     try {
@@ -100,6 +125,39 @@ function DonationCompleteModal({ isOpen, onClose, donationInfo }) {
       }
     });
   };
+  const handleKakaoShare = async () => {
+   
+    try {
+      // 이미지를 서버에 업로드하여 공개 URL 얻기
+      let imageUrl = compositeImage;
+      
+     
+      window.Kakao.Share.sendDefault({
+          objectType: "feed",
+          content: {
+              title: `${donationInfo?.campaignName || '기부 캠페인'}에 기부했습니다!`,
+              description: `${donationInfo?.amount.toLocaleString()}SCN를 기부하여 ${donationInfo?.campaignCategory || '사회'} 분야에 도움을 주었습니다.`,
+              link: {
+                  mobileWebUrl: `http://localhost:5173/donate/campaign/${id}`,
+                  webUrl: `http://localhost:5173/donate/campaign/${id}`,
+              },
+          },
+      });
+    } catch (error) {
+      console.error('카카오 공유 오류:', error);
+      alert('카카오 공유 중 오류가 발생했습니다. 다시 시도해주세요.');
+    }
+};
+
+function shareTwitter() {
+  const sendText = `${donationInfo?.campaignName || '기부 캠페인'}에 기부했습니다!`;
+  const sendUrl = `http://localhost:5173/donate/campaign/${id}`;
+
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(sendText)}&url=${encodeURIComponent(sendUrl)}`;
+  window.open(twitterUrl, "_blank");
+}
+
+
 
   if (!isOpen) return null;
 
@@ -114,8 +172,8 @@ function DonationCompleteModal({ isOpen, onClose, donationInfo }) {
         <h2>기부 완료!</h2>
         <div className="donation-modal-info">
           <p className='donation-modal-info-text'>NFT 인증서가 발급되었어요</p>
-          {/*<p>캠페인: {donationInfo.campaignName}</p>*/}
-          {/*<p>기부 금액: {donationInfo.amount} ETH</p>*/}
+          
+
           {isLoading ? (
             <div 
               className='donation-modal-img' 
@@ -143,6 +201,16 @@ function DonationCompleteModal({ isOpen, onClose, donationInfo }) {
           >
             {isUploading ? '업로드 중...' : '커뮤니티에 공유하기'}
           </button>
+        </div>
+        <div className="share-btn">
+          <img 
+          src='/images/kakao.png'
+          className='share-btn-kakao' onClick={handleKakaoShare}/>
+
+          <img 
+          src='/images/x.png'
+          className='share-btn-twitter' 
+          onClick={shareTwitter}/>
         </div>
       </div>
     </div>

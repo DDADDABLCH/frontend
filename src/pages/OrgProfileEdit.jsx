@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './OrgProfileEdit.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import SERVER_URL from '../hooks/SeverUrl';
+import './OrgProfileEdit.css';
 
 export default function OrgProfileEdit() {
     const { organization } = useLocation().state;
@@ -35,7 +36,7 @@ export default function OrgProfileEdit() {
             setProfileImage(file);
         }
     };
-    console.log('organization:', organization);
+    // console.log('organization:', organization);
 
     // 정보 수정 제출
     const handleProfileSubmit = async (e) => {
@@ -124,11 +125,11 @@ export default function OrgProfileEdit() {
             });
             
             const responseText = await res.text();
-            console.log('비밀번호 변경 서버 응답:', {
-                status: res.status,
-                ok: res.ok,
-                response: responseText
-            });
+            // console.log('비밀번호 변경 서버 응답:', {
+            //     status: res.status,
+            //     ok: res.ok,
+            //     response: responseText
+            // });
             
             if (res.ok) {
                 alert('비밀번호가 성공적으로 변경되었습니다.');
@@ -192,12 +193,13 @@ export default function OrgProfileEdit() {
                     </div>
 
                     <label htmlFor="description">소개글</label>
-                    <input
-                        className="profile-edit-input"
+                    <textarea
+                        className="profile-edit-textarea"
                         name="description"
                         id="description"
                         placeholder="소개글을 입력해주세요"
                         value={description}
+                        maxLength={500}
                         onChange={e => setDescription(e.target.value)}
                     />
 

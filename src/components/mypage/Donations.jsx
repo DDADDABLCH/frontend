@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function Donations({ recentDonations }) {
     const navigate = useNavigate();
-    console.log(recentDonations);
+    //console.log(recentDonations);
 
     /*"recentDonations": [
             {
@@ -28,7 +28,7 @@ export default function Donations({ recentDonations }) {
                         }}>
                             <div className="mypage-donation-date">{new Date(donation.donationDate).toLocaleDateString()}</div>
                             <div className="mypage-donation-title">{donation.campaignName}</div>
-                            <div className="mypage-donation-amount">{donation.donationAmount} ETH</div>
+                            <div className="mypage-donation-amount">{donation.donationAmount.toLocaleString()}SCN</div>
                             <div className="transaction-hash-container">
                             <div className="mypage-donation-transactionHash-label">Transaction Hash</div>
                             <span className="mypage-donation-transactionHash">{donation.transactionHash}</span>

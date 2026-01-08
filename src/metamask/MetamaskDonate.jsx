@@ -14,13 +14,13 @@ function MetamaskDonate() {
 
   const [account, setAccount] = useState("");
   const [contract, setContract] = useState(null);
-  const [donateAmount, setDonateAmount] = useState("0.01");
+  const [donateAmount, setDonateAmount] = useState("10");
   const [platformFee, setPlatformFee] = useState(0);
   const [loading, setLoading] = useState(false);
   const [validationError, setValidationError] = useState("");
   const [provider, setProvider] = useState(null);
   const [donationStep, setDonationStep] = useState(""); // 기부 진행 단계 표시
-  const contractAddress = "0xCa32413067e66A1604163bF1740b9F5B32699023";
+  const contractAddress = "0xfC7B6134A2fCFd5b9d814be35d2344ad08310105";
 
   // 🎯 개선된 한글 카테고리 매핑 함수
   const getDonationCategoryValue = (categoryString) => {
@@ -29,7 +29,7 @@ function MetamaskDonate() {
       return 5;
     }
 
-    console.log("🔍 카테고리 매핑:", categoryString);
+    //console.log("🔍 카테고리 매핑:", categoryString);
 
     // ✅ React categories와 스마트 컨트랙트 enum 정확한 1:1 매핑
     const koreanCategoryMap = {
@@ -61,9 +61,9 @@ function MetamaskDonate() {
     if (koreanCategoryMap.hasOwnProperty(trimmedCategory)) {
       const value = koreanCategoryMap[trimmedCategory];
       const enumName = getEnumName(value);
-      console.log(
+      /*console.log(
         `✅ 매핑 성공: "${trimmedCategory}" → ${value} (${enumName})`
-      );
+      );*/
       return value;
     }
 
@@ -97,7 +97,7 @@ function MetamaskDonate() {
       "사회",
     ];
 
-    console.log("=== 한글 카테고리 매핑 테스트 ===");
+    /*console.log("=== 한글 카테고리 매핑 테스트 ===");
     reactCategories.forEach((category) => {
       const mappedValue = getDonationCategoryValue(category);
       console.log(
@@ -105,7 +105,8 @@ function MetamaskDonate() {
       );
     });
     console.log("===================================");
-  };
+  */
+    };
 
   // 페이지 진입 시 스크롤 맨 위로
   useEffect(() => {
@@ -189,6 +190,25 @@ function MetamaskDonate() {
           toast.success("지갑이 성공적으로 연결되었습니다!");
         } else {
           console.log("✅ 인증된 지갑 자동 연결 완료:", address);
+        }
+
+        // 현재 블록 번호 확인
+        try {
+          const blockNumber = await web3Provider.getBlockNumber();
+          console.log("현재 블록:", blockNumber);
+        } catch (blockError) {
+          console.error("블록 번호 조회 실패:", blockError);
+        }
+
+        // 컨트랙트 코드 확인  
+        try {
+          const code = await web3Provider.getCode(contractAddress);
+          console.log("컨트랙트 존재:", code !== "0x");
+          if (code === "0x") {
+            console.warn("⚠️ 컨트랙트가 배포되지 않았거나 주소가 잘못되었습니다!");
+          }
+        } catch (codeError) {
+          console.error("컨트랙트 코드 조회 실패:", codeError);
         }
 
         return true; // 연결 성공
@@ -281,7 +301,9 @@ function MetamaskDonate() {
     }
 
     if (parseFloat(donateAmount) < 0.001) {
-      setValidationError("최소 기부 금액은 0.001 ETH입니다.");
+      //setValidationError("최소 기부 금액은 0.001 ETH입니다.");
+      setValidationError("최소 기부 금액은 10 SCN입니다.");
+
       return false;
     }
 
@@ -516,12 +538,13 @@ function MetamaskDonate() {
     try {
       console.log("트랜잭션 실행 중...");
 
-      // Ethers 버전에 따른 분기 처리
+      // Ethers 버전에 따른 분기 처리 (입력값을 10000으로 나눠 사용)
+      const divided = String(Number(donateAmount) / 10000 || 0);
       let parsedAmount;
       try {
-        parsedAmount = ethers.parseEther(donateAmount);
+        parsedAmount = ethers.parseEther(divided);
       } catch (error) {
-        parsedAmount = ethers.utils.parseEther(donateAmount);
+        parsedAmount = ethers.utils.parseEther(divided);
       }
 
       console.log("파싱된 금액:", parsedAmount.toString());
@@ -785,7 +808,7 @@ function MetamaskDonate() {
       </div>
 
       <div className="input-group">
-        <label htmlFor="donateAmount">기부 금액 (ETH)</label>
+        <label htmlFor="donateAmount">기부 금액 (SCN)</label>
         <input
           id="donateAmount"
           type="number"
@@ -794,7 +817,7 @@ function MetamaskDonate() {
           value={donateAmount}
           onChange={(e) => setDonateAmount(e.target.value)}
           disabled={loading}
-          placeholder="최소 0.001 ETH"
+          placeholder="최소 10 SCN"
         />
       </div>
 
@@ -807,21 +830,16 @@ function MetamaskDonate() {
         <div className="fee-info">
           <p>
             플랫폼 수수료: {(platformFee / 100).toFixed(2)}% (
-            {formatEther(
-              parseEther(donateAmount || "0")
-                ?.mul?.(platformFee)
-                ?.div?.(10000) || "0"
-            )}{" "}
-            ETH)
+            {(
+              (parseFloat(donateAmount || "0") * platformFee) / 10000
+            ).toFixed(3)} SCN)
           </p>
           <p>
             수혜자 수령액:{" "}
-            {formatEther(
-              parseEther(donateAmount || "0")
-                ?.mul?.(10000 - platformFee)
-                ?.div?.(10000) || "0"
-            )}{" "}
-            ETH
+            {(
+              (parseFloat(donateAmount || "0") * (10000 - platformFee)) /
+              10000
+            ).toFixed(3)} SCN
           </p>
         </div>
       )}
